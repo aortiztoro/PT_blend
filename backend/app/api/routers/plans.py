@@ -48,3 +48,11 @@ def update_task(
     svc: TaskService = Depends(get_task_service),
 ):
     return svc.update_task(plan_id, task_id, data)
+
+
+@router.post("/{plan_id}/generate-tasks", response_model=list[StudyTaskRead], status_code=201)
+def generate_tasks(
+    plan_id: int,
+    svc: TaskService = Depends(get_task_service),
+):
+    return svc.generate_tasks(plan_id)

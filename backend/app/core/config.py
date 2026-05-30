@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     JWT_SECRET: str = "dev-secret-change-in-production"
     JWT_ALGORITHM: str = "HS256"
     JWT_EXPIRE_DAYS: int = 90
+    GROQ_API_KEY: str = ""
 
     model_config = {"env_file": ".env"}
 
