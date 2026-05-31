@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from ..repositories.plan_repository import PlanRepository
 from ..repositories.task_repository import TaskRepository
 from ..schemas.study_task import StudyTaskCreate, StudyTaskRead, StudyTaskUpdate
+from .ai_service import generate_tasks_from_plan
 
 
 class TaskService:
@@ -32,3 +33,27 @@ class TaskService:
         if not task:
             raise HTTPException(status_code=404, detail="Task not found")
         return StudyTaskRead.model_validate(task)
+
+    def generate_tasks(self, plan_id: int) -> list[StudyTaskRead]:
+        plan = self.plan_repo.get_by_id(plan_id)
+        if not plan:
+            raise HTTPException(status_code=404, detail="Plan not found")
+
+        target_date = str(plan.target_date) if plan.target_date else None
+
+        generated = generate_tasks_from_plan(
+            goal=plan.goal,
+            hours_per_week=plan.hours_per_week,
+            target_date=target_date,
+        )
+
+        saved_tasks = []
+        for task in generated:
+            data = StudyTaskCreate(
+                title=task.title,
+                estimated_hours=task.estimated_hours,
+            )
+            saved = self.repo.create(plan_id, data)
+            saved_tasks.append(StudyTaskRead.model_validate(saved))
+
+        return saved_tasks
