@@ -119,4 +119,26 @@ export const api = {
       method: "PATCH",
       body: JSON.stringify({ completed }),
     }),
+
+  generateTasks: (planId: number) =>
+    req<StudyTask[]>(`/plans/${planId}/generate-tasks`, { method: "POST" }),
+
+  uploadDocument: async (planId: number, file: File) => {
+    const token = getToken();
+    const formData = new FormData();
+    formData.append("file", file);
+    const res = await fetch(`/api/plans/${planId}/documents`, {
+      method: "POST",
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    });
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
+  },
+
+  chat: (planId: number, question: string) =>
+    req<{ answer: string }>(`/plans/${planId}/chat`, {
+      method: "POST",
+      body: JSON.stringify({ question }),
+    }),
 };
